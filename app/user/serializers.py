@@ -20,6 +20,18 @@ class UserSerializer(serializers.ModelSerializer):
         # create_user is a helper function in the User model
         return get_user_model().objects.create_user(**validated_data)
 
+    def update(self, instance, validated_data):
+        """Update a user, setting the password correctly and return it"""
+        # remove password from validated_data if it exists
+        password = validated_data.pop('password', None)
+        # call the update method on the parent class
+        user = super().update(instance, validated_data)
+        # if password exists, set it using the set_password method
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
+
 
 class AuthTokenSerializer(serializers.Serializer):
     """Serializer for the user authentication object"""

@@ -30,7 +30,8 @@ class PublicUserApiTests(TestCase):
 
     def test_create_valid_user(self):
         """Test creating user with valid payload is successful."""
-        payload = example_user
+        # copy the example_user dict to avoid changing it
+        payload = example_user.copy()
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         user = get_user_model().objects.get(email=payload['email'])
@@ -39,14 +40,14 @@ class PublicUserApiTests(TestCase):
 
     def test_create_user_with_existing_email(self):
         """Test creating user with existing email fails."""
-        payload = example_user
+        payload = example_user.copy()
         create_user(**payload)
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_user_with_short_password(self):
         """Test creating user with short password fails."""
-        payload = example_user
+        payload = example_user.copy()
         payload['password'] = 'pw'
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

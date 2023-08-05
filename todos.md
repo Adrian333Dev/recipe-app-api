@@ -2,6 +2,7 @@
 
 - [ ] Replace basic token authentication with JWT refresh token authentication
 - [ ] Separate update user to update password and update user details
+- [ ] Extend Recipe model to include ingredients, steps, etc.
 
 ## Ideas
 

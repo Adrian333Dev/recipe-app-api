@@ -10,7 +10,7 @@ from recipe import serializers
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Manage recipes in the database"""
-    serializer_class = serializers.RecipeSerializer
+    serializer_class = serializers.RecipeDetailSerializer
     # Queryset is used to retrieve objects from the database
     queryset = Recipe.objects.all()
     # Add authentication and permission classes
@@ -24,9 +24,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         # Return objects for the current authenticated user only
         return self.queryset.filter(user=self.request.user).order_by('-id')
 
-    # Override the perform_create function to add the user to the recipe
-    # object
-    def perform_create(self, serializer):
-        """Create a new recipe"""
-        # Create a new recipe
-        serializer.save(user=self.request.user)
+    def get_serializer_class(self):
+        """Return appropriate serializer class"""
+        # Return appropriate serializer class
+        if self.action == 'list':
+            return serializers.RecipeSerializer
+
+        return self.serializer_class

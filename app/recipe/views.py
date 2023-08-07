@@ -31,3 +31,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return serializers.RecipeSerializer
 
         return self.serializer_class
+
+    # Override the perform_create function to add the authenticated user
+    # to the recipe
+    def perform_create(self, serializer):
+        """Create a new recipe"""
+        # Create a new recipe
+        serializer.save(user=self.request.user)

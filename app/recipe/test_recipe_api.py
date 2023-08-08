@@ -13,14 +13,6 @@ from core.models import Recipe
 
 from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 
-RECIPES_URL = reverse('recipe:recipe-list')
-
-
-def detail_url(recipe_id):
-    """Return recipe detail URL"""
-    return reverse('recipe:recipe-detail', args=[recipe_id])
-
-
 example_recipe = {
     'title': 'Example Recipe',
     'time_minutes': 10,
@@ -29,6 +21,13 @@ example_recipe = {
     'link': 'https://example.com/recipe',
 }
 
+RECIPES_URL = reverse('recipe:recipe-list')
+
+
+def detail_url(recipe_id):
+    """Return recipe detail URL"""
+    return reverse('recipe:recipe-detail', args=[recipe_id])
+
 
 def create_recipe(**params):
     """Helper function to create a recipe"""
@@ -36,6 +35,11 @@ def create_recipe(**params):
     defaults.update(params)
 
     return Recipe.objects.create(**defaults)
+
+
+def create_user(**params):
+    """Helper function to create a user"""
+    return get_user_model().objects.create_user(**params)
 
 
 class PublicRecipeApiTests(TestCase):
@@ -56,10 +60,8 @@ class PrivateRecipeApiTests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            'user@example.com',
-            'password123',
-        )
+        self.user = create_user(
+            email='user@example.com', password='password123')
         self.client.force_authenticate(self.user)
 
     def test_retrieve_recipes(self):
@@ -77,10 +79,8 @@ class PrivateRecipeApiTests(TestCase):
 
     def test_recipes_limited_to_user(self):
         """Test retrieving recipes for user"""
-        other_user = get_user_model().objects.create_user(
-            'otheruser@example.com',
-            'password123',
-        )
+        other_user = create_user(
+            email='other_user@example.com', password='password123')
         create_recipe(user=other_user)
         create_recipe(user=self.user)
 
@@ -112,3 +112,60 @@ class PrivateRecipeApiTests(TestCase):
         recipe = Recipe.objects.get(id=res.data['id'])
         for key in example_recipe.keys():
             self.assertEqual(example_recipe[key], getattr(recipe, key))
+
+    def test_partial_update_recipe(self):
+        """Test updating a recipe with patch"""
+        recipe = create_recipe(user=self.user, title='Original title')
+        payload = {'title': 'New title'}
+        url = detail_url(recipe.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.title, payload['title'])
+
+    def test_full_update_recipe(self):
+        """Test updating a recipe with put"""
+        original_recipe = create_recipe(user=self.user, **example_recipe)
+        payload = {
+            'title': 'New title',
+            'time_minutes': 20,
+            'price': Decimal('10.00'),
+            'description': 'New description',
+            'link': 'https://example.com/new-recipe',
+        }
+        url = detail_url(original_recipe.id)
+        res = self.client.put(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        recipe = Recipe.objects.get(id=original_recipe.id)
+        for key in payload.keys():
+            self.assertEqual(payload[key], getattr(recipe, key))
+
+    def test_update_recipe_invalid(self):
+        """Test updating a recipe with invalid data"""
+        new_user = create_user(email='user2@example.com', password='password')
+        recipe = create_recipe(user=self.user, **example_recipe)
+        payload = {'user': new_user.id}
+        url = detail_url(recipe.id)
+        self.client.patch(url, payload)
+
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.user, self.user)
+
+    def test_delete_recipe(self):
+        """Test deleting a recipe"""
+        recipe = create_recipe(user=self.user)
+        url = detail_url(recipe.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Recipe.objects.filter(id=recipe.id).exists())
+
+    def test_try_delete_other_users_recipe(self):
+        """Test that a user cannot delete another user's recipe"""
+        other_user = create_user(
+            email='other_user@example.com', password='password123')
+        recipe = create_recipe(user=other_user)
+        url = detail_url(recipe.id)
+        res = self.client.delete(url)

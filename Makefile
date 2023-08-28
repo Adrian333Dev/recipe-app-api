@@ -26,12 +26,9 @@ dcbuild:
 build: dcbuild
 
 test:
-	$(DC_RUN) $(TEST)
+	$(DC_RUN) "python manage.py test && flake8"
 t: test
 
-flake8:
-	$(FLAKE8)
-f8: flake8
 
 createproject:
 ifeq ($(filter-out $@,$(MAKECMDGOALS)),)
@@ -40,6 +37,14 @@ else
 	$(DC_RUN) "django-admin startproject $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))"
 endif
 cp: createproject
+
+createapp:
+ifeq ($(filter-out $@,$(MAKECMDGOALS)),)
+	@echo "Usage: make createapp app_name"
+else
+	$(DC_RUN) "python manage.py startapp $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))"
+endif
+ca: createapp	
 
 help:
 	@echo "Usage: make [target]"

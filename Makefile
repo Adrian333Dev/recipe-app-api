@@ -8,27 +8,26 @@ DC_DOWN=$(DC) down
 DC_RUN=$(DC) run --rm app sh -c
 FLAKE8=$(DC_RUN) "flake8"
 STARTPROJECT=$(DC_RUN) django-admin startproject
+TEST="python manage.py test"
 
 
 default: help
 
-dc:
-ifeq ($(filter $(MAKECMDGOALS),b),b)
-	$(DC_BUILD) 
-else ifeq ($(filter $(MAKECMDGOALS),u),u)
+dcup:
 	$(DC_UP)
-else ifeq ($(filter $(MAKECMDGOALS),d),d)
+up: dcup
+
+dcdown:
 	$(DC_DOWN)
-else ifeq ($(filter $(MAKECMDGOALS),r),r)
-	$(DC_RUN) $(filter-out $@,$(MAKECMDGOALS))
-else
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@echo "  b            Build docker image"
-	@echo "  u            Run docker container"
-	@echo "  d            Stop docker container"
-endif
+down: dcdown
+
+dcbuild:
+	$(DC_BUILD)
+build: dcbuild
+
+test:
+	$(DC_RUN) $(TEST)
+t: test
 
 flake8:
 	$(FLAKE8)
@@ -46,7 +45,3 @@ help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  dc					 Docker Compose commands (Usage: make [target] [args])"
-	@echo "  flake8 (f8)			 Run flake8 in docker container"
-	@echo "  startproject (sp)	 Create new Django project (Usage: make [target] [project_name])"
-	@echo "  help					 Show this help message"

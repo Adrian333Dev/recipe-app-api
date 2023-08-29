@@ -46,6 +46,19 @@ else
 endif
 ca: createapp	
 
+createsuperuser:
+	$(DC_RUN) "python manage.py createsuperuser"
+su: createsuperuser
+
+migrations:
+	$(DC_RUN) "python manage.py makemigrations"
+ms: migrations
+
+migrate:
+	$(DC_RUN) "python manage.py wait_for_db && python manage.py migrate"
+m: migrate
+
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""

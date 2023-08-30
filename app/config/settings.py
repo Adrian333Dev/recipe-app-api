@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third party apps
     "rest_framework",
+    "rest_framework.authtoken",
     "drf_spectacular",
     # Local apps
     "core",
+    "user",
 ]
 
 MIDDLEWARE = [

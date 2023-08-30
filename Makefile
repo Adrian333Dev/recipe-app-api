@@ -1,65 +1,118 @@
 # Makefile
 
-# Docker Compose commands
+# Variables
 DC=docker-compose
-DC_BUILD=$(DC) build
-DC_UP=$(DC) up
-DC_DOWN=$(DC) down
 DC_RUN=$(DC) run --rm app sh -c
-FLAKE8=$(DC_RUN) "flake8"
-STARTPROJECT=$(DC_RUN) django-admin startproject
-TEST="python manage.py test"
 
 
+# Commands
+.PHONY: help create-and-run-migrations migrate createmigration run-server superuser shell docker-build docker-up docker-down update test create-project create-app
 default: help
 
-dcup:
-	$(DC_UP)
-up: dcup
+create-and-run-migrations:
+	@echo "Creating and running migrations..."
+	$(DC_RUN) "python manage.py makemigrations && python manage.py migrate"
+crm: create-and-run-migrations
 
-dcdown:
-	$(DC_DOWN)
-down: dcdown
+migrate:
+	@echo "Running migrations..."
+	$(DC_RUN) "python manage.py migrate"
+m: migrate
 
-dcbuild:
-	$(DC_BUILD)
-build: dcbuild
+createmigration:
+	@echo "Creating migrations..."
+	$(DC_RUN) "python manage.py makemigrations"
+cm: createmigration
+
+run-server:
+	@echo "Running server..."
+	$(DC_RUN) "python manage.py runserver"
+r: run-server
+
+superuser:
+	@echo "Creating superuser..."
+	$(DC_RUN) "python manage.py createsuperuser"
+su: superuser
+
+shell:
+	@echo "Running shell..."
+	$(DC_RUN) "python manage.py shell"
+sh: shell
+
+docker-build:
+	@echo "Building docker image..."
+	$(DC) build
+build: docker-build
+
+docker-up:
+	@echo "Running docker containers..."
+	$(DC) up
+up: docker-up
+
+docker-down:
+	@echo "Stopping docker containers..."
+	$(DC) down
+down: docker-down
+
+update: makemigrations docker-build
 
 test:
+	@echo "Running tests..."
 	$(DC_RUN) "python manage.py test && flake8"
 t: test
 
-
-createproject:
+create-project:
 ifeq ($(filter-out $@,$(MAKECMDGOALS)),)
-	@echo "Usage: make createproject project_name [optional: .]"
+	@echo "Please provide a project name"
 else
-	$(DC_RUN) "django-admin startproject $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))"
+	@echo "Creating project..."
+	django-admin startproject $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS)) .
 endif
-cp: createproject
+cp: create-project
 
-createapp:
+create-app:
 ifeq ($(filter-out $@,$(MAKECMDGOALS)),)
-	@echo "Usage: make createapp app_name"
+	@echo "Please provide an app name"
 else
+	@echo "Creating app..."
 	$(DC_RUN) "python manage.py startapp $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))"
 endif
-ca: createapp	
+ca: create-app
 
-createsuperuser:
-	$(DC_RUN) "python manage.py createsuperuser"
-su: createsuperuser
 
-migrations:
-	$(DC_RUN) "python manage.py makemigrations"
-ms: migrations
-
-migrate:
-	$(DC_RUN) "python manage.py wait_for_db && python manage.py migrate"
-m: migrate
-
+# Help
 
 help:
-	@echo "Usage: make [target]"
+	@echo "Usage: make [command]"
 	@echo ""
-	@echo "Targets:"
+	@echo "Commands:"
+	@echo "  crm, create-and-run-migrations  Create and run migrations"
+	@echo "  m, migrate                      Run migrations"
+	@echo "  cm, createmigration             Create migrations"
+	@echo "  r, run-server                   Run server"
+	@echo "  su, superuser                   Create superuser"
+	@echo "  sh, shell                       Run shell"
+	@echo "  u, update                       Make migrations and and rebuild docker image"
+	@echo "  build                           Build docker image"
+	@echo "  up                              Run docker containers"
+	@echo "  down                            Stop docker containers"
+	@echo "  t, test                         Run tests"
+	@echo "  cp, create-project              Create project"
+	@echo "  ca, create-app                  Create app"
+	@echo "  help                            Show this help message and exit"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make crm"
+	@echo "  make m"
+	@echo "  make cm"
+	@echo "  make r"
+	@echo "  make su"
+	@echo "  make sh"
+	@echo "  make u"
+	@echo "  make build"
+	@echo "  make up"
+	@echo "  make down"
+	@echo "  make t"
+	@echo "  make cp <project_name>"
+	@echo "  make ca <app_name>"
+	@echo "  make help"

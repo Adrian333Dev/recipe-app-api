@@ -2,10 +2,17 @@
 Database models for the application.
 """
 
+from django.conf import settings
 from django.db.models import (
+    Model,
     CharField,
+    TextField,
     EmailField,
     BooleanField,
+    IntegerField,
+    DecimalField,
+    ForeignKey,
+    CASCADE,
 )
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -69,3 +76,21 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
+
+
+class Recipe(Model):
+    """Recipe model for the application."""
+
+    title = CharField(max_length=255)
+    description = TextField()
+    time_minutes = IntegerField()
+    price = DecimalField(max_digits=5, decimal_places=2)
+    link = CharField(max_length=255, blank=True)
+    user = ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=CASCADE,
+    )
+
+    def __str__(self):
+        """Return the string representation of the recipe."""
+        return self.title

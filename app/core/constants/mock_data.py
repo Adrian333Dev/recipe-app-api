@@ -39,9 +39,10 @@ def mock_recipe(**kwargs):
         "title": title,
         "description": description,
         "time_minutes": time,
-        "price": price,
+        "price": Decimal(str(price)),
         "link": link,
     }
+
     if user:
         recipe["user"] = user
 

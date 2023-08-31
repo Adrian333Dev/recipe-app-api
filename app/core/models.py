@@ -82,7 +82,7 @@ class Recipe(Model):
     """Recipe model for the application."""
 
     title = CharField(max_length=255)
-    description = TextField()
+    description = TextField(blank=True)
     time_minutes = IntegerField()
     price = DecimalField(max_digits=5, decimal_places=2)
     link = CharField(max_length=255, blank=True)

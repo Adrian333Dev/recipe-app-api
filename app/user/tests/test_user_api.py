@@ -64,7 +64,7 @@ class PublicUserApiTests(TestCase):
 
     def test_user_with_too_short_password(self):
         """Test creating user with too short password fails."""
-        payload = mock_user("Bobby", "Davis")
+        payload = mock_user()
         payload["password"] = "pw"
 
         res = self.client.post(CREATE_USER_URL, payload)
@@ -75,7 +75,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_token_for_user(self):
         """Test that a token is created for the user."""
-        user = mock_user("Henry", "Ford")
+        user = mock_user()
         create_user(**user)
         payload = {"email": user["email"], "password": user["password"]}
         res = self.client.post(TOKEN_URL, payload)
@@ -85,7 +85,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_token_invalid_credentials(self):
         """Test that token is not created if invalid credentials are given."""
-        user = mock_user("Thomas", "Edison")
+        user = mock_user()
         create_user(**user)
         payload = {"email": user["email"], "password": "wrong_password"}
         res = self.client.post(TOKEN_URL, payload)

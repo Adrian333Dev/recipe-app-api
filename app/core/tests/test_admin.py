@@ -19,7 +19,7 @@ class AdminSiteTests(TestCase):
             username="admin", email="admin@exmaple.com", password="pass12345"
         )
         self.client.force_login(self.admin_user)
-        user = mock_user("Test", "User", "3113")
+        user = mock_user()
         self.user = get_user_model().objects.create_user(**user)
 
     def test_users_listed(self):

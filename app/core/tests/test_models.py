@@ -7,7 +7,14 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 from core.constants.mock_data import john_doe, mock_user
-from core.models import Recipe
+from core.models import Recipe, Tag
+
+
+def create_user(**params):
+    """
+    Helper function to create a user.
+    """
+    return get_user_model().objects.create_user(**params)
 
 
 class ModelTests(TestCase):
@@ -17,7 +24,7 @@ class ModelTests(TestCase):
 
     def test_create_user_successful(self):
         """Test creating a new user is successful."""
-        user = get_user_model().objects.create_user(**john_doe)
+        user = create_user(**john_doe)
 
         self.assertEqual(user.email, john_doe["email"])
         self.assertEqual(user.username, john_doe["username"])
@@ -74,7 +81,7 @@ class ModelTests(TestCase):
 
     def test_create_recipe(self):
         """Test creating a new recipe."""
-        user = get_user_model().objects.create_user(**mock_user("Alice", "Benjamin"))
+        user = create_user(**mock_user())
         recipe = Recipe.objects.create(
             user=user,
             title="Steak and mushroom sauce",
@@ -88,3 +95,11 @@ class ModelTests(TestCase):
         self.assertEqual(recipe.title, "Steak and mushroom sauce")
         self.assertEqual(recipe.time_minutes, 5)
         self.assertEqual(recipe.price, Decimal("5.00"))
+
+    def test_create_tags(self):
+        """Test creating a new tag."""
+        user = create_user(**john_doe)
+        tag = Tag.objects.create(user=user, name="Vegan")
+
+        self.assertEqual(str(tag), tag.name)
+        self.assertEqual(tag.name, "Vegan")

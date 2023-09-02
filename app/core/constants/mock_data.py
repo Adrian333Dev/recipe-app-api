@@ -9,6 +9,7 @@ from .constants import (
     recipe_times,
     recipe_prices,
     tags,
+    ingredients,
 )
 
 # Mock Data
@@ -55,8 +56,8 @@ def mock_recipe(**kwargs):
     price = kwargs.get("price", recipe_prices[idx])
     link = kwargs.get("link", recipe_link(idx))
 
-    # user = kwargs.get("user", None)
     tags = kwargs.get("tags", [])
+    ingredients = kwargs.get("ingredients", [])
 
     recipe = {
         "title": title,
@@ -68,6 +69,9 @@ def mock_recipe(**kwargs):
 
     if tags:
         recipe["tags"] = tags
+
+    if ingredients:
+        recipe["ingredients"] = ingredients
 
     # if user:
     #     recipe["user"] = user
@@ -87,6 +91,12 @@ def mock_tag(**kwargs):
         tag["user"] = user
 
     return tag
+
+
+def mock_ingredient(**kwargs):
+    """Helper function to create a mock ingredient."""
+    idx = kwargs.get("idx", random.randrange(len(ingredients)))
+    return {"name": ingredients[idx]}
 
 
 # Mock Users

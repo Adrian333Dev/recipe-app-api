@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 from core.constants.mock_data import john_doe, mock_user
-from core.models import Recipe, Tag
+from core.models import Recipe, Tag, Ingredient
 
 
 def create_user(**params):
@@ -103,3 +103,11 @@ class ModelTests(TestCase):
 
         self.assertEqual(str(tag), tag.name)
         self.assertEqual(tag.name, "Vegan")
+
+    def test_create_ingredient(self):
+        """Test creating a new ingredient."""
+        user = create_user(**john_doe)
+        ingredient = Ingredient.objects.create(user=user, name="Cucumber")
+
+        self.assertEqual(str(ingredient), ingredient.name)
+        self.assertEqual(ingredient.name, "Cucumber")

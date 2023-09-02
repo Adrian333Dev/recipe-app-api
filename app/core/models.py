@@ -21,6 +21,8 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 
+AUTH_USER_MODEL = settings.AUTH_USER_MODEL
+
 
 class UserManager(BaseUserManager):
     """User manager for the application."""
@@ -82,13 +84,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Recipe(Model):
     """Recipe model for the application."""
 
-    user = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE)
+    user = ForeignKey(AUTH_USER_MODEL, on_delete=CASCADE)
     title = CharField(max_length=255)
     description = TextField(blank=True)
     time_minutes = IntegerField()
     price = DecimalField(max_digits=5, decimal_places=2)
     link = CharField(max_length=255, blank=True)
     tags = ManyToManyField("Tag")
+    ingredients = ManyToManyField("Ingredient")
 
     def __str__(self):
         """Return the string representation of the recipe."""
@@ -99,11 +102,19 @@ class Tag(Model):
     """Tag model for the application."""
 
     name = CharField(max_length=255)
-    user = ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=CASCADE,
-    )
+    user = ForeignKey(AUTH_USER_MODEL, on_delete=CASCADE)
 
     def __str__(self):
         """Return the string representation of the tag."""
+        return self.name
+
+
+class Ingredient(Model):
+    """Ingredient model for the application."""
+
+    name = CharField(max_length=255)
+    user = ForeignKey(AUTH_USER_MODEL, on_delete=CASCADE)
+
+    def __str__(self):
+        """Return the string representation of the ingredient."""
         return self.name

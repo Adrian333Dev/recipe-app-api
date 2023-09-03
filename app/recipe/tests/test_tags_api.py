@@ -1,7 +1,6 @@
 """
 Tests for the tags API
 """
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -10,8 +9,8 @@ from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED
 
 from rest_framework.test import APIClient
 
-from core.models import Tag
-from core.constants.mock_data import mock_tag, mock_user, john_doe
+from core.models import Tag, Recipe
+from core.constants.mock_data import mock_tag, mock_user, john_doe, mock_recipe
 from recipe.serializers import TagSerializer
 
 
@@ -92,3 +91,31 @@ class PrivateTagsApiTests(TestCase):
         self.client.delete(url)
 
         self.assertEqual(Tag.objects.count(), 0)
+
+    def test_filter_tags_by_recipes(self):
+        """Test returning tags that are assigned to recipes."""
+        t1 = Tag.objects.create(user=self.user, name="Tag 1")
+        t2 = Tag.objects.create(user=self.user, name="Tag 2")
+        r1 = Recipe.objects.create(user=self.user, **mock_recipe(name="Recipe 1"))
+        r1.tags.add(t1)
+
+        res = self.client.get(TAGS_URL, {"assigned_only": 1})
+
+        t1 = TagSerializer(t1)
+        t2 = TagSerializer(t2)
+
+        self.assertIn(t1.data, res.data)
+        self.assertNotIn(t2.data, res.data)
+
+    def test_filter_tags_by_recipes_distinct(self):
+        """Test returning tags that are assigned to recipes are unique."""
+        t1 = Tag.objects.create(user=self.user, name="Tag 1")
+        Tag.objects.create(user=self.user, name="Tag 2")
+        r1 = Recipe.objects.create(user=self.user, **mock_recipe(name="Recipe 1"))
+        r2 = Recipe.objects.create(user=self.user, **mock_recipe(name="Recipe 2"))
+        r1.tags.add(t1)
+        r2.tags.add(t1)
+
+        res = self.client.get(TAGS_URL, {"assigned_only": 1})
+
+        self.assertEqual(len(res.data), 1)

@@ -379,28 +379,40 @@ class ImageUploadTests(TestCase):
 
         self.assertEqual(res.status_code, HTTP_400_BAD_REQUEST)
 
-    # def test_filter_recipes_by_tags(self):
-    #     """Test returning recipes with specific tags."""
-    #     recipe1 = create_recipe(
-    #         user=self.user, **mock_recipe(title="Thai vegetable curry")
-    #     )
-    #     recipe2 = create_recipe(
-    #         user=self.user, **mock_recipe(title="Aubergine with tahini")
-    #     )
-    #     tag1 = Tag.objects.create(user=self.user, name="Vegan")
-    #     tag2 = Tag.objects.create(user=self.user, name="Vegetarian")
-    #     recipe1.tags.add(tag1)
-    #     recipe2.tags.add(tag2)
-    #     recipe3 = create_recipe(user=self.user, **mock_recipe(title="Fish and chips"))
+    def test_filter_recipes_by_tags(self):
+        """Test returning recipes with specific tags."""
+        r1 = create_recipe(user=self.user, name="Thai vegetable curry")
+        r2 = create_recipe(user=self.user, name="Aubergine with tahini")
+        tag1 = Tag.objects.create(user=self.user, name="Vegan")
+        tag2 = Tag.objects.create(user=self.user, name="Vegetarian")
+        r1.tags.add(tag1)
+        r2.tags.add(tag2)
+        r3 = create_recipe(user=self.user, **mock_recipe(title="Fish and chips"))
 
-    #     res = self.client.get(
-    #         RECIPES_URL,
-    #         {"tags": f"{tag1.id},{tag2.id}"},
-    #     )
+        res = self.client.get(RECIPES_URL, {"tags": f"{tag1.id},{tag2.id}"})
 
-    #     serializer1 = RecipeSerializer(recipe1)
-    #     serializer2 = RecipeSerializer(recipe2)
-    #     serializer3 = RecipeSerializer(recipe3)
-    #     self.assertIn(serializer1.data, res.data)
-    #     self.assertIn(serializer2.data, res.data)
-    #     self.assertNotIn(serializer3.data, res.data)
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filter_recipes_by_ingredients(self):
+        """Test returning recipes with specific ingredients."""
+        r1 = create_recipe(user=self.user, name="Posh beans on toast")
+        r2 = create_recipe(user=self.user, name="Chicken cacciatore")
+        i1 = Ingredient.objects.create(user=self.user, name="Feta cheese")
+        i2 = Ingredient.objects.create(user=self.user, name="Chicken")
+        r1.ingredients.add(i1)
+        r2.ingredients.add(i2)
+        r3 = create_recipe(user=self.user, **mock_recipe(title="Steak and mushrooms"))
+
+        res = self.client.get(RECIPES_URL, {"ingredients": f"{i1.id},{i2.id}"})
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)

@@ -2,6 +2,9 @@
 Database models for the application.
 """
 
+import uuid
+import os
+
 from django.conf import settings
 from django.db.models import (
     Model,
@@ -11,6 +14,7 @@ from django.db.models import (
     BooleanField,
     IntegerField,
     DecimalField,
+    ImageField,
     ForeignKey,
     ManyToManyField,
     CASCADE,
@@ -22,6 +26,14 @@ from django.contrib.auth.models import (
 )
 
 AUTH_USER_MODEL = settings.AUTH_USER_MODEL
+
+
+def recipe_image_file_path(instance, filename):
+    """Generate file path for new recipe image."""
+    ext = os.path.splitext(filename)[1]
+    filename = f"{uuid.uuid4()}{ext}"
+
+    return os.path.join("uploads", "recipe", filename)
 
 
 class UserManager(BaseUserManager):
@@ -92,6 +104,7 @@ class Recipe(Model):
     link = CharField(max_length=255, blank=True)
     tags = ManyToManyField("Tag")
     ingredients = ManyToManyField("Ingredient")
+    image = ImageField(null=True, upload_to=recipe_image_file_path)
 
     def __str__(self):
         """Return the string representation of the recipe."""
